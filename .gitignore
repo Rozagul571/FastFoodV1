@@ -1,0 +1,14 @@
+.idea/
+media/
+staticfiles/
+
+__pycache__
+.env
+
+dump/
+.pgpass
+*.sqlite3
+
+
+venv/
+env/
