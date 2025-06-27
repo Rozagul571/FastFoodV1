@@ -1,19 +1,3 @@
-# from rest_framework import permissions
-#
-# from users.models import User
-#
-# class IsAdmin(permissions.BasePermission):
-#     def has_permission(self, request, view):
-#         return request.user.is_authenticated and request.user.role == User.RoleType.ADMIN
-#
-# class IsWaiterOrAdmin(permissions.BasePermission):
-#     def has_permission(self, request, view):
-#         return request.user.is_authenticated and request.user.role in [User.RoleType.ADMIN, User.RoleType.WAITER]
-#
-# class IsUser(permissions.BasePermission):
-#     def has_permission(self, request, view):
-#         return request.user.is_authenticated and request.user.role == User.RoleType.USER
-
 from rest_framework import permissions
 class Permissions(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -30,7 +14,7 @@ class Permissions(permissions.BasePermission):
             view_basename = 'register'
         else:
             view_basename = ''
-        print(f"User: {request.user}, Autentifikatsiya: {request.user.is_authenticated}, Method: {request.method}, View: {view_basename}")
+        print(f"User: {request.user}, Authentication: {request.user.is_authenticated}, Method: {request.method}, View: {view_basename}")
 
         if view_basename in ['dish', 'category', 'restaurant'] and request.method in ['GET', 'HEAD', 'OPTIONS']:
             return True
@@ -57,3 +41,23 @@ class Permissions(permissions.BasePermission):
                 return True
             return False
         return False
+
+
+
+
+# from rest_framework import permissions
+#
+# from users.models import User
+#
+# class IsAdmin(permissions.BasePermission):
+#     def has_permission(self, request, view):
+#         return request.user.is_authenticated and request.user.role == User.RoleType.ADMIN
+#
+# class IsWaiterOrAdmin(permissions.BasePermission):
+#     def has_permission(self, request, view):
+#         return request.user.is_authenticated and request.user.role in [User.RoleType.ADMIN, User.RoleType.WAITER]
+#
+# class IsUser(permissions.BasePermission):
+#     def has_permission(self, request, view):
+#         return request.user.is_authenticated and request.user.role == User.RoleType.USER
+

@@ -31,4 +31,4 @@ def estimate_delivery(order):
     preparation = quantity * 75
     delivery = max(300, float(order.distance_km or 0) * 180)
     total_time = preparation + delivery
-    return int(total_time)
+    return int(total_time)  # Faqat total_time qaytariladi

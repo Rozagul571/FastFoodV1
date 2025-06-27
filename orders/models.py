@@ -1,4 +1,3 @@
-
 from django.db import models
 from django.contrib.gis.db import models as gis_models
 from users.models import User
@@ -14,16 +13,13 @@ class Order(models.Model):
         DELIVERED = 'delivered', 'Delivered'
         CANCELLED = 'cancelled', 'Cancelled'
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE,
-                             related_name='orders')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='orders')
-    status = models.CharField(max_length=20, choices=Status.choices,
-                              default=Status.PENDING)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     delivery_address = models.CharField(max_length=255)
     location = gis_models.PointField()
     distance_km = models.FloatField(null=True, blank=True)
-    delivery_fee = models.DecimalField(max_digits=10, decimal_places=2, null=True,
-                                       blank=True)
+    delivery_fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     estimated_time = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -36,7 +32,5 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
-    def __str__(self):
-        return f"{self.quantity} x {self.dish.name}"
-
-
+    class Meta:
+        unique_together = ('order', 'dish')

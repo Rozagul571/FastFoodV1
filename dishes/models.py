@@ -1,13 +1,14 @@
 from django.db import models
+from django.db.models import Model
+
 from restaurants.models import Restaurant
 
-class Category(models.Model):
+class Category(Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='categories')
     parent_category = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='subcategories')
-    def __str__(self):
-        return self.name
+
 
 class Dish(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="dishes")

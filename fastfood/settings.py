@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'orders',
     'restaurants',
     'dishes',
+    'cart',
 ]
 
 MIDDLEWARE = [
@@ -118,7 +119,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20,
+    'PAGE_SIZE': 10,
 }
 
 
@@ -141,8 +142,7 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
+
 
 STATIC_URL = 'static/'
 
