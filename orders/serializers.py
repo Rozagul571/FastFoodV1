@@ -6,6 +6,8 @@ from cart.models import Cart
 from django.contrib.gis.geos import Point
 from orders.utils import calculate_distance, calculate_totals, estimate_delivery
 from decimal import Decimal
+from rest_framework.exceptions import AuthenticationFailed
+
 
 class OrderItemSerializer(serializers.ModelSerializer):
     dish_id = serializers.PrimaryKeyRelatedField(queryset=Dish.objects.all(), source="dish", write_only=True)
@@ -21,9 +23,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
         validated_data['price'] = dish.price
         return super().create(validated_data)
 
+
 class OrderSerializer(serializers.ModelSerializer):
     order_items = OrderItemSerializer(many=True)
-    restaurant_id = serializers.PrimaryKeyRelatedField(queryset=Restaurant.objects.all(), source="restaurant", write_only=True)
+    restaurant_id = serializers.PrimaryKeyRelatedField(queryset=Restaurant.objects.all(), source="restaurant",
+                                               write_only=True)
     latitude = serializers.FloatField(write_only=True)
     longitude = serializers.FloatField(write_only=True)
     location = serializers.HiddenField(default=None)
@@ -39,8 +43,8 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = (
             'id', 'user', 'restaurant_id', 'status', 'delivery_address', 'location',
-            'latitude', 'longitude', 'distance_km', 'delivery_fee', 'preparation_time', 'delivery_time', 'estimated_time',
-            'order_items', 'total_price', 'created_at', 'updated_at'
+            'latitude', 'longitude', 'distance_km', 'delivery_fee', 'preparation_time', 'delivery_time', 'order_items',
+            'estimated_time','total_price', 'created_at', 'updated_at'
         )
         read_only_fields = (
             'id', 'user', 'status', 'delivery_address', 'location', 'distance_km',
@@ -49,14 +53,17 @@ class OrderSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
+        request = self.context['request']
+        if not request.user.is_authenticated:
+            raise AuthenticationFailed("You must be log in to order. Please login or register.")
         restaurant = data['restaurant']
         latitude = data['latitude']
         longitude = data['longitude']
-        user = self.context['request'].user
+        cart_id = request.session.get('cart_id')
 
-        cart_items = Cart.objects.filter(user=user).select_related('dish')
+        cart_items = Cart.objects.filter(cart_id=cart_id).select_related('dish')
         if not cart_items.exists():
-            raise serializers.ValidationError({"error": "No active cart found for this user."})
+            raise serializers.ValidationError({"error": "No active cart found."})
 
         for item in cart_items:
             if item.dish.restaurant_id != restaurant.id:
@@ -72,8 +79,9 @@ class OrderSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         location = validated_data['location']
         delivery_address = validated_data['delivery_address']
+        cart_id = self.context['request'].session.get('cart_id')
 
-        cart_items = Cart.objects.filter(user=user).select_related('dish')
+        cart_items = Cart.objects.filter(cart_id=cart_id).select_related('dish')
 
         distance_km = calculate_distance(location, restaurant.location)
         if distance_km is None:
@@ -92,7 +100,8 @@ class OrderSerializer(serializers.ModelSerializer):
         )
 
         for item in cart_items:
-            order_items_data.append(OrderItem(order=order, dish=item.dish, quantity=item.quantity, price=item.dish.price))
+            order_items_data.append(
+                OrderItem(order=order, dish=item.dish, quantity=item.quantity, price=item.dish.price))
 
         OrderItem.objects.bulk_create(order_items_data)
         estimated_time = estimate_delivery(order)
@@ -102,7 +111,7 @@ class OrderSerializer(serializers.ModelSerializer):
         order.save()
 
         cart_items.delete()
-
+        del self.context['request'].session['cart_id']
         return order
 
     def to_representation(self, instance):
@@ -116,6 +125,6 @@ class OrderSerializer(serializers.ModelSerializer):
                 'total_price': rep['total_price'],
                 'estimated_time': rep['estimated_time'],
                 'order_items': rep['order_items'],
-                'created_at': rep['created_at']
+                'created_at': rep['created_at'],
             }
         return rep
