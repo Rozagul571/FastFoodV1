@@ -4,7 +4,7 @@ from restaurants.models import Restaurant
 
 class CategorySerializer(serializers.ModelSerializer):
     restaurant_id = serializers.PrimaryKeyRelatedField(queryset=Restaurant.objects.all(), source='restaurant', write_only=True)
-    parent_category_id = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), source='parent_category', write_only=True, allow_null=True)
+    parent_category_id = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), source='parent_category', write_only=True)
     restaurant = serializers.StringRelatedField(read_only=True)
     parent_category = serializers.StringRelatedField(read_only=True)
 
@@ -19,7 +19,6 @@ class CategorySerializer(serializers.ModelSerializer):
         if parent_category and parent_category.restaurant != restaurant:
             raise serializers.ValidationError(f"{parent_category.name} kategoriyasi {restaurant.name} restoraniga tegishli emas.")
         return data
-
 
 class DishSerializer(serializers.ModelSerializer):
     category_id = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), source='category', write_only=True)

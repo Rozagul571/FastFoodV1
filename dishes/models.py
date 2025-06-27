@@ -1,6 +1,5 @@
 from django.db import models
 from django.db.models import Model
-
 from restaurants.models import Restaurant
 
 class Category(Model):
